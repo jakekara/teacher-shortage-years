@@ -20,7 +20,7 @@ var disp_year = function( y )
     if ( y.length != 8 )
 	return
     
-    return y.substring(0,4) + "-" + y.substring(4)
+    return y.substring(0,4) + "-" + y.substring(4) + " &bull;"
 }
 
 var just_years = function( obj )
@@ -128,7 +128,7 @@ var draw = function( d )
 	.append("text")
 	.classed("year-label", true)
 	.attr("data-year", function(d){return d;})
-    	.text(function(d){return disp_year(d);});
+    	.html(function(d){return disp_year(d);});
     
     
     labels.each(function(){
@@ -164,7 +164,7 @@ var draw = function( d )
     }).attr("y", function(){
 	    return d3.select(this).node().getBBox().height + "px";
     }).attr("x", function(_, i ){
-	    return ( left_margin + box_width + box_width * i - d3.select(this).node().getBBox().width ) + "px";
+	    return ( left_margin + box_width / 2 + box_width * i - d3.select(this).node().getBBox().width ) + "px";
     })
 	      
     svg.attr("width", g.node().getBBox().width + "px");
