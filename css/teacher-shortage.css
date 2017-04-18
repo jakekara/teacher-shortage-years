@@ -68,3 +68,13 @@ text.year-label:nth-child(10n+1){
 .clear-both{
     clear: both;
 }
+
+line{
+    stroke: #ebebeb;
+}
+
+text.note{
+    fill: gray;
+    text-transform: UPPERCASE;
+    font-size: 0.75em;
+}

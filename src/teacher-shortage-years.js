@@ -1,4 +1,5 @@
-const d3 = require( "d3" );
+// const d3 = require( "d3-selection" );
+const d3 = Object.assign({}, require("d3-selection"), require("d3-request") );
 
 const DATAFILE = "data/bilingual_cleanyears.csv";
 const KEYSTATES = ["CONNECTICUT",
@@ -223,7 +224,33 @@ var draw = function( d )
 		     + box_width / 2
 		     + box_width * i
 		     - d3.select(this).node().getBBox().width / 2 ) + "px";
-    })
+	})
+
+    
+    var total_label = g.append("text")
+	.text("Shortage states")
+	.classed("note", true)
+    total_label
+	.attr("y", function(){
+	    return (
+		    g.node().getBBox().height
+		    - d3.select(this).node().getBBox().height - PADDING
+	    ) + "px";
+	});
+
+    var line = g.append("line")
+	.attr("x1", 0)
+	.attr("y1", function(){
+	    return count_labels_g.node().getBBox().y - PADDING + "px"
+	});
+
+    line
+	.attr("x2", function(){
+	    return g.node().getBBox().width + "px"
+	})
+	.attr("y2", function(){
+	    return count_labels_g.node().getBBox().y - PADDING + "px"
+	})
 
     year_labels
 	.attr("x", function(_, i ){
@@ -237,12 +264,14 @@ var draw = function( d )
 	    return ret + "px";
 	})
     	.attr("y", function(){
-	    return d3.select(this).node().getBBox().height + "px";
+	    return (d3.select(this).node().getBBox().height) + "px";
 	});
+
+  
 
     svg.attr("width", g.node().getBBox().width + "px");
     svg.attr("height", (BOX_HEIGHT * row_count  + count_labels.node().getBBox().height) + "px");
-    svg.attr("height", (g.node().getBBox().height ) + "px");
+    svg.attr("height", (g.node().getBBox().height + PADDING * 2 ) + "px");
 
 }
 
