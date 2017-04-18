@@ -33,7 +33,9 @@ g.box-row{
 }
 
 g.box-row:hover text{
-    opacity: 0.5;
+    /* opacity: 0.5; */
+    fill: tomato;
+    
 }
 
 rect.year-box:hover{
@@ -42,6 +44,7 @@ rect.year-box:hover{
 }
 
 text.year-label{
+    fill: gray;
     opacity: 0;
 }
 

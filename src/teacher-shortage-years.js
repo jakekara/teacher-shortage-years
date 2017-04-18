@@ -1,9 +1,13 @@
 const d3 = require( "d3" );
 
-const DATAFILE = "data/bilingual_nearby_cleanyears.csv";
-const KEYSTATES = ["CONNECTICUT", "MASSACHUSETTS",
-		 "NEW YORK","NEW JERSERY",
+const DATAFILE = "data/bilingual_cleanyears.csv";
+const KEYSTATES = ["CONNECTICUT",
+		   "MASSACHUSETTS",
+		   "NEW YORK",
+		   "NEW JERSEY",
 		   "RHODE ISLAND"];
+
+var shortage_data;
 
 var WIDTH, HEIGHT;
 var BOX_HEIGHT = 20;
@@ -15,12 +19,36 @@ var box_width;
 
 var sel = d3.select( "#container" );
 
+var just_nearby_states = function ()
+{
+    return shortage_data.filter(function(a){
+	return KEYSTATES.indexOf(a["state"]) >= 0;
+    });
+}
+
+var national_count = function( yearstr)
+{
+    var ret = 0;
+    
+    for ( var i in shortage_data )
+    {
+	console.log(yearstr, shortage_data[i][yearstr] );
+	try{
+	    if ( shortage_data[i][yearstr].toUpperCase() === "TRUE" )
+		ret++;
+	    
+	}catch(e){}
+    }
+
+    return ret;
+}
+
 var disp_year = function( y )
 {
     if ( y.length != 8 )
 	return
     
-    return y.substring(0,4) + "-" + y.substring(4) + " &bull;"
+    return y.substring(0,4) + "-" + y.substring(4);
 }
 
 var just_years = function( obj )
@@ -51,7 +79,7 @@ var draw_box_row = function( d, i )
     box_width = ( WIDTH - left_margin )  / year_count;
     var height = BOX_HEIGHT;
     var y = i * height;
-    
+
     var year_boxes = row_sel.selectAll("rect")
 	.data(jy)
 	.enter()
@@ -71,25 +99,33 @@ var draw_box_row = function( d, i )
     year_boxes.on("mouseover", function(d){
 	var yr = d3.select(this).attr("data-year")
 	var ysel = ".year-label[data-year='"+ yr +"']";
+	var bsel = ".year-box[data-year='"+ yr +"']";
 
+	d3.selectAll(bsel)
+	    .style("opacity",0.5)
+	
 	d3.selectAll(".year-label")
 	    .style("opacity",0);
 	
-	d3.select(ysel)
+	d3.selectAll(ysel)
 	    .style("opacity","1");
 
     });
 
     year_boxes.on("mouseout", function(){
 
-	d3.select("g.year-labels").classed("default",true);
+	d3.selectAll(".year-box").style("opacity",null);
 	
+	d3.selectAll("g.year-labels").classed("default",true);
+
 	d3.selectAll(".year-label")
-	    .style("opacity",0);
+	    .style("opacity",null);
 
-	d3.selectAll(".year-label:nth-child(10n+1)")
-	    .style("opacity",1);
+	d3.selectAll(".year-labels-bottom .year-label:nth-child(10n+1)")
+	    .style("opacity",null);
 
+	d3.selectAll(".year-labels-top .year-label:nth-child(10n+1)")
+	    .style("opacity",null);
     });
 
 }
@@ -106,7 +142,19 @@ var draw = function( d )
     var svg = sel.append("svg")
 
     var g = svg.append("g")
-    
+
+    var year_labels_g = g.append("g")
+	.classed("year-labels", true)
+    	.classed("year-labels-top", true)
+
+    var year_labels = year_labels_g.selectAll(".year-label")
+	.data(just_years(d[0]))
+	.enter()
+	.append("text")
+	.classed("year-label", true)
+	.attr("data-year", function(d){return d;})
+	.html(function(d){return disp_year(d);});
+
     var box_rows = g.selectAll("g.box_row")
 	.data( d )
 	.enter( )
@@ -118,18 +166,21 @@ var draw = function( d )
 	.text(function(d){ return d["state"]; })
     	.attr( "data-state", function(d){ return d["state"]; } );
 
-
-    var year_labels_g = g.append("g")
+    var count_labels_g = g.append("g")
 	.classed("year-labels", true)
+	.classed("year-labels-bottom", true );
     
-    var year_labels = year_labels_g.selectAll("text.year-label")
+    var count_labels = count_labels_g.selectAll("text.year-label")
 	.data(just_years(d[0]))
 	.enter()
 	.append("text")
 	.classed("year-label", true)
 	.attr("data-year", function(d){return d;})
-    	.html(function(d){return disp_year(d);});
+    // .html(function(d){return disp_year(d);});
+	.html(function(d){ return national_count(d);});
     
+
+
     
     labels.each(function(){
 	var this_width = d3.select(this).node().getBBox().width ;
@@ -152,29 +203,54 @@ var draw = function( d )
 	    var trans = "translate("
 		// + ( left_margin )
 		+ "0px,"
-		+ ( i * (BOX_HEIGHT  ) ) + "px)";
+		+ ( i * (BOX_HEIGHT  ) + d3.select(".year-labels-top").node().getBBox().height + PADDING) + "px)";
 	    console.log("trans", trans);
 	    return trans;
 	})
 
     box_rows.each( draw_box_row );
 
-    year_labels.style("transform", function(){
-	return "translate(0px," + ( BOX_HEIGHT * row_count ) + "px)";
-    }).attr("y", function(){
-	    return d3.select(this).node().getBBox().height + "px";
-    }).attr("x", function(_, i ){
-	    return ( left_margin + box_width / 2 + box_width * i - d3.select(this).node().getBBox().width ) + "px";
-    })
-	      
-    svg.attr("width", g.node().getBBox().width + "px");
 
-    svg.attr("height", (BOX_HEIGHT * row_count  + year_labels.node().getBBox().height) + "px");
+    count_labels.style("transform",
+		       function(){
+			   return "translate(0px," + ( BOX_HEIGHT * row_count + d3.select(".year-labels-top").node().getBBox().height + PADDING ) + "px)";
+		       })
+	.attr("y", function(){
+	    return d3.select(this).node().getBBox().height + "px";
+	})
+    	.attr("x", function(_, i ){
+    	    return ( left_margin
+		     + box_width / 2
+		     + box_width * i
+		     - d3.select(this).node().getBBox().width / 2 ) + "px";
+    })
+
+    year_labels
+	.attr("x", function(_, i ){
+	    var ret = ( left_margin
+		     + box_width * i
+		     + box_width / 2
+		     - d3.select(this).node().getBBox().width / 2
+		      )
+
+	    ret = Math.min(ret, g.node().getBBox().width - d3.select(this).node().getBBox().width );
+	    return ret + "px";
+	})
+    	.attr("y", function(){
+	    return d3.select(this).node().getBBox().height + "px";
+	});
+
+    svg.attr("width", g.node().getBBox().width + "px");
+    svg.attr("height", (BOX_HEIGHT * row_count  + count_labels.node().getBBox().height) + "px");
+    svg.attr("height", (g.node().getBBox().height ) + "px");
 
 }
 
 var loaded = function( d )
 {
+    shortage_data = d;
+
+    var d = just_nearby_states( d );
     var d = d.sort(function(a, b){
 	if (a["state"] < b["state"]) return -1;
 	return 1;
