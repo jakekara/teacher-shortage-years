@@ -182,8 +182,8 @@ var draw = function( d )
 
     
     labels.each(function(){
-	var this_width = d3.select(this).node().getBBox().width ;
-	var this_height = d3.select(this).node().getBBox().height ;
+	var this_width = this.getBBox().width ;
+	var this_height = this.getBBox().height ;
 	if ( this_width > left_margin )
 	    left_margin = this_width + 2; 
 
