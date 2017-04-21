@@ -179,8 +179,6 @@ var draw = function( d )
 	.attr("data-year", function(d){return d;})
     // .html(function(d){return disp_year(d);});
 	.html(function(d){ return national_count(d);});
-    
-
 
     
     labels.each(function(){
@@ -204,21 +202,37 @@ var draw = function( d )
 	    var trans = "translate("
 		// + ( left_margin )
 		+ "0px,"
-		+ ( i * (BOX_HEIGHT  ) + d3.select(".year-labels-top").node().getBBox().height + PADDING) + "px)";
-	    console.log("trans", trans);
+		+ ( i * (BOX_HEIGHT  )
+		    + d3.select(".year-labels-top").node().getBBox().height
+		    + PADDING) + "px)";
+
 	    return trans;
 	})
 
     box_rows.each( draw_box_row );
 
 
-    count_labels.style("transform",
+    count_labels_g.style("transform",
 		       function(){
-			   return "translate(0px," + ( BOX_HEIGHT * row_count + d3.select(".year-labels-top").node().getBBox().height + PADDING ) + "px)";
+			   var y = g.node().getBBox().height
+			       + g.node().getBBox().y
+			       + this.getBBox().height;
+			       // ( BOX_HEIGHT * row_count
+			       // 	 + d3.select(".year-labels-top")
+			       // 	 .node().getBBox().height
+			       // 	 + PADDING )
+
+			   var trans = 
+			    "translate(0px, " + y
+			       + "px)";
+
+			   return trans;
 		       })
-	.attr("y", function(){
-	    return d3.select(this).node().getBBox().height + "px";
-	})
+
+    count_labels
+	// .attr("y", function(){
+	//     return d3.select(this).node().getBBox().height + "px";
+	// })
     	.attr("x", function(_, i ){
     	    return ( left_margin
 		     + box_width / 2
@@ -228,7 +242,7 @@ var draw = function( d )
 
     
     var total_label = g.append("text")
-	.text("Shortage states")
+	.text("Total states")
 	.classed("note", true)
     total_label
 	.attr("y", function(){
@@ -238,19 +252,19 @@ var draw = function( d )
 	    ) + "px";
 	});
 
-    var line = g.append("line")
-	.attr("x1", 0)
-	.attr("y1", function(){
-	    return count_labels_g.node().getBBox().y - PADDING + "px"
-	});
+    // var line = g.append("line")
+    // 	.attr("x1", 0)
+    // 	.attr("y1", function(){
+    // 	    return count_labels_g.node().getBBox().y - PADDING + "px"
+    // 	});
 
-    line
-	.attr("x2", function(){
-	    return g.node().getBBox().width + "px"
-	})
-	.attr("y2", function(){
-	    return count_labels_g.node().getBBox().y - PADDING + "px"
-	})
+    // line
+    // 	.attr("x2", function(){
+    // 	    return g.node().getBBox().width + "px"
+    // 	})
+    // 	.attr("y2", function(){
+    // 	    return count_labels_g.node().getBBox().y - PADDING + "px"
+    // 	})
 
     year_labels
 	.attr("x", function(_, i ){
